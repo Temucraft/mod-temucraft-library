@@ -8,6 +8,9 @@
  */
 
 #include "Chat.h"
+#include "Config.h"
+#include "StringConvert.h"
+#include "Tokenize.h"
 #include "TemucraftModuleText.h"
 #include "DatabaseEnv.h"
 #include "GameObject.h"
@@ -28,7 +31,7 @@
 
 namespace
 {
-    constexpr uint32 BOOK_FIRST = 601650;
+    uint32 BOOK_FIRST = 601650;          // Temucraft.Library.BookFirst
     constexpr uint32 BOOK_COUNT = 40;
 
     struct Milestone
@@ -38,12 +41,32 @@ namespace
         std::vector<uint32> items;
     };
 
-    std::array<Milestone, 4> const MILESTONES = { {
-        { 10, 0,  { 601660, 601661 } },
-        { 20, 0,  { 601662, 601663 } },
-        { 25, 0,  { 601664, 601665, 601666 } },
-        { 40, 50, { 601667, 601668, 601669 } },
-    } };
+    // Temucraft.Library.Milestones
+    constexpr char const* DEFAULT_MILESTONES = "10:0:601660,601661 20:0:601662,601663 25:0:601664,601665,601666 40:50:601667,601668,601669";
+    std::vector<Milestone> MILESTONES;
+
+    // "books:level:item,item,... books:level:item,..." (at most 10 items each)
+    std::vector<Milestone> ParseMilestones(std::string const& text)
+    {
+        std::vector<Milestone> list;
+        for (std::string_view entry : Acore::Tokenize(text, ' ', false))
+        {
+            std::vector<std::string_view> parts = Acore::Tokenize(entry, ':', false);
+            if (parts.size() != 3)
+                continue;
+            Optional<uint32> books = Acore::StringTo<uint32>(parts[0]);
+            Optional<uint32> level = Acore::StringTo<uint32>(parts[1]);
+            if (!books || !level)
+                continue;
+            Milestone m{ *books, uint8(std::min<uint32>(*level, 255)), {} };
+            for (std::string_view id : Acore::Tokenize(parts[2], ',', false))
+                if (Optional<uint32> item = Acore::StringTo<uint32>(id); item && m.items.size() < 10)
+                    m.items.push_back(*item);
+            if (!m.items.empty())
+                list.push_back(std::move(m));
+        }
+        return list;
+    }
 
     enum Sender : uint32
     {
@@ -257,7 +280,13 @@ public:
 class TemucraftLibrary_World : public WorldScript
 {
 public:
-    TemucraftLibrary_World() : WorldScript("TemucraftLibrary_World", { WORLDHOOK_ON_STARTUP }) { }
+    TemucraftLibrary_World() : WorldScript("TemucraftLibrary_World", { WORLDHOOK_ON_AFTER_CONFIG_LOAD, WORLDHOOK_ON_STARTUP }) { }
+
+    void OnAfterConfigLoad(bool /*reload*/) override
+    {
+        BOOK_FIRST = sConfigMgr->GetOption<uint32>("Temucraft.Library.BookFirst", 601650);
+        MILESTONES = ParseMilestones(sConfigMgr->GetOption<std::string>("Temucraft.Library.Milestones", DEFAULT_MILESTONES));
+    }
 
     void OnStartup() override
     {

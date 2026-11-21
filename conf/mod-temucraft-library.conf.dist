@@ -1,0 +1,19 @@
+[worldserver]
+
+########################################
+# mod-temucraft-library
+########################################
+
+#
+#    Temucraft.Library.BookFirst
+#        Description: Game object of the first lost book; the 40 books use this id and the next 39. Must match data/sql.
+#        Default:     601650
+
+Temucraft.Library.BookFirst = 601650
+
+#
+#    Temucraft.Library.Milestones
+#        Description: Librarian rewards: "books:level:item,item,..." entries separated by spaces (books found, lowest character level, items to choose from, at most 10).
+#        Default:     "10:0:601660,601661 20:0:601662,601663 25:0:601664,601665,601666 40:50:601667,601668,601669"
+
+Temucraft.Library.Milestones = "10:0:601660,601661 20:0:601662,601663 25:0:601664,601665,601666 40:50:601667,601668,601669"

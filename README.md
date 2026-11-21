@@ -6,6 +6,7 @@
 
 1. Put this folder in `modules/` of your AzerothCore source, re-run CMake and build.
 2. The SQL in `data/sql/` is applied by the worldserver on its next start (AzerothCore's module updater). Every file deletes its own rows before inserting them, so running one again is safe.
+   Copy `conf/mod-temucraft-library.conf.dist` to your `configs/modules/` as `mod-temucraft-library.conf` to change its settings (first book id, librarian rewards).
 3. No client changes: it works with an unmodified 3.3.5a client.
 
 ## What it adds, and where
