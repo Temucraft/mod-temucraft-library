@@ -20,6 +20,8 @@
 | world | `item_template` | 601660-601669 (rewards) |
 | characters | `mod_temucraft_library_book`, `mod_temucraft_library_reward` | per character |
 
+A character deleted for good (`OnPlayerDeleteFromDB`, in the same transaction as the core's own deletes; not a `CharDelete.Method = 1` unlink, which can be restored) takes its `mod_temucraft_library_book` and `mod_temucraft_library_reward` rows with it. `data/sql/db-characters/base/mod_temucraft_library_character_cleanup.sql` removes rows of characters deleted before; it is safe to run again.
+
 ## Works with other modules
 
 - Reward items are copies of existing items (renamed).
