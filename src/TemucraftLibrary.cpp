@@ -294,10 +294,26 @@ public:
     }
 };
 
+// a deleted character's read books and claimed milestones go with it
+// OnPlayerDeleteFromDB: only when the character is really removed (not a CharDelete.Method = 1 unlink, which can be
+// restored), and in the same transaction as the core's own deletes.
+class TemucraftLibrary_Delete : public PlayerScript
+{
+public:
+    TemucraftLibrary_Delete() : PlayerScript("TemucraftLibrary_Delete", { PLAYERHOOK_ON_DELETE_FROM_DB }) { }
+
+    void OnPlayerDeleteFromDB(CharacterDatabaseTransaction trans, uint32 guid) override
+    {
+        trans->Append("DELETE FROM `mod_temucraft_library_book` WHERE `guid` = {}", guid);
+        trans->Append("DELETE FROM `mod_temucraft_library_reward` WHERE `guid` = {}", guid);
+    }
+};
+
 void AddTemucraftLibraryScripts()
 {
     new go_mod_temucraft_library_book();
     new npc_temucraft_librarian();
     new TemucraftLibrary_Player();
     new TemucraftLibrary_World();
+    new TemucraftLibrary_Delete();
 }
